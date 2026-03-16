@@ -1,62 +1,944 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SBD - Simple Business Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SBD — Simple Business Dashboards</title>
+  <meta name="description" content="Simple Business Dashboards helps businesses visualize their numbers with beautiful, easy-to-understand dashboards." />
   <style>
-    body {
-      font-family: Arial;
-      background:#0f172a;
-      color:white;
-      text-align:center;
-      padding:80px;
+    :root{
+      --bg:#f3f5f9;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --primary:#4f46e5;
+      --primary-dark:#3730a3;
+      --sidebar:#2f3f98;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --soft:#eef2ff;
+      --shadow:0 18px 45px rgba(15,23,42,.08);
+      --radius:20px;
+      --max:1200px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    a{text-decoration:none;color:inherit}
+
+    .container{
+      width:min(var(--max), calc(100% - 32px));
+      margin:0 auto;
+    }
+
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:rgba(243,245,249,.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(0,0,0,.05);
+    }
+
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 0;
+      gap:16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+    }
+
+    .brand-badge{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--primary),#60a5fa);
+      color:#fff;
+      font-weight:900;
+      box-shadow:0 10px 24px rgba(79,70,229,.25);
+    }
+
+    .nav-links{
+      display:flex;
+      gap:22px;
+      color:var(--muted);
+      font-size:14px;
+      align-items:center;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 18px;
+      border-radius:14px;
+      font-weight:700;
+      border:1px solid transparent;
+      transition:.2s ease;
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 12px 25px rgba(79,70,229,.22);
+    }
+
+    .btn-primary:hover{background:var(--primary-dark)}
+    .btn-secondary{
+      background:#fff;
+      color:var(--text);
+      border-color:var(--line);
+    }
+
+    .hero{
+      padding:56px 0 30px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1fr 1.1fr;
+      gap:28px;
+      align-items:center;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#e0e7ff;
+      color:var(--primary-dark);
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:16px;
     }
 
     h1{
-      font-size:48px;
+      margin:0 0 16px;
+      font-size:clamp(2.4rem, 5vw, 4.5rem);
+      line-height:.95;
+      letter-spacing:-.05em;
     }
 
-    p{
-      font-size:20px;
-      color:#94a3b8;
+    .hero-copy{
+      color:var(--muted);
+      line-height:1.75;
+      font-size:1.06rem;
+      max-width:620px;
+      margin-bottom:22px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .hero-proof{
+      display:flex;
+      flex-wrap:wrap;
+      gap:18px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .hero-proof span::before{
+      content:"•";
+      color:var(--primary);
+      margin-right:8px;
+    }
+
+    .dashboard-shell{
+      background:#fff;
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,.04);
+    }
+
+    .dashboard-layout{
+      display:grid;
+      grid-template-columns:78px 1fr;
+      min-height:640px;
+    }
+
+    .sidebar{
+      background:linear-gradient(180deg,#3142a1,#27358b);
+      color:#fff;
+      padding:18px 12px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:18px;
+    }
+
+    .side-logo{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      border:2px solid rgba(255,255,255,.7);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .side-icon{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      font-size:18px;
+    }
+
+    .dash-main{
+      background:#f6f7fb;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .dash-topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding:18px 24px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+    }
+
+    .top-tabs{
+      display:flex;
+      gap:24px;
+      color:#6b7280;
+      font-weight:600;
+      font-size:15px;
+      flex-wrap:wrap;
+    }
+
+    .top-tabs .active{
+      color:var(--primary);
+      position:relative;
+    }
+
+    .top-tabs .active::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-12px;
+      height:3px;
+      background:var(--primary);
+      border-radius:10px;
+    }
+
+    .dash-content{
+      padding:24px;
+    }
+
+    .dash-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .dash-title h2{
+      margin:0;
+      font-size:2rem;
+      letter-spacing:-.03em;
+    }
+
+    .date-chip{
+      padding:10px 14px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:600;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:240px 1fr;
+      gap:18px;
+      margin-bottom:18px;
+    }
+
+    .left-stats{
+      display:grid;
+      gap:18px;
     }
 
     .card{
-      background:#1e293b;
-      padding:30px;
-      border-radius:10px;
-      margin:20px;
+      background:#fff;
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(0,0,0,.04);
+      padding:20px;
+    }
+
+    .metric-label{
+      color:#111827;
+      font-size:15px;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+
+    .metric-big{
+      font-size:3.4rem;
+      font-weight:800;
+      letter-spacing:-.05em;
+      line-height:1;
+      margin-bottom:10px;
+    }
+
+    .metric-dot{
       display:inline-block;
-      width:200px;
+      width:10px;
+      height:10px;
+      background:#84cc16;
+      border-radius:50%;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+
+    .chart-card h3,
+    .donut-card h3,
+    .table-card h3{
+      margin:0 0 16px;
+      font-size:1.1rem;
+      letter-spacing:-.02em;
+    }
+
+    .chart-area{
+      height:270px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,.04) 1px, transparent 1px) 0 0/100% 45px,
+        linear-gradient(to right, rgba(0,0,0,.03) 1px, transparent 1px) 0 0/52px 100%;
+      border-radius:14px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .chart-svg{
+      position:absolute;
+      inset:0;
+    }
+
+    .bottom-grid{
+      display:grid;
+      grid-template-columns:260px 1fr;
+      gap:18px;
+    }
+
+    .donuts{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .donut-box{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.05);
+      border-radius:18px;
+      padding:16px;
+      text-align:center;
+    }
+
+    .donut{
+      width:120px;
+      height:120px;
+      margin:0 auto 12px;
+      border-radius:50%;
+      position:relative;
+    }
+
+    .donut.orange{
+      background:conic-gradient(#fb923c 0 62%, #8b5cf6 62% 100%);
+    }
+
+    .donut.purple{
+      background:conic-gradient(#8b5cf6 0 48%, #9ca3af 48% 100%);
+    }
+
+    .donut::after{
+      content:"";
+      position:absolute;
+      inset:18px;
+      background:#fff;
+      border-radius:50%;
+    }
+
+    .donut-stat{
+      position:relative;
+      z-index:2;
+      margin-top:-86px;
+      font-size:1.6rem;
+      font-weight:800;
+      margin-bottom:46px;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius:14px;
+      border:1px solid var(--line);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+      min-width:620px;
+    }
+
+    th, td{
+      padding:14px 12px;
+      text-align:left;
+      border-bottom:1px solid var(--line);
+      font-size:14px;
+    }
+
+    th{
+      background:#f8fafc;
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .section{
+      padding:60px 0;
+    }
+
+    .section-head{
+      max-width:760px;
+      margin-bottom:24px;
+    }
+
+    .kicker{
+      color:var(--primary);
+      font-size:13px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:10px;
+    }
+
+    .section h2{
+      margin:0 0 12px;
+      font-size:clamp(1.9rem,3vw,2.8rem);
+      letter-spacing:-.04em;
+    }
+
+    .section-copy{
+      color:var(--muted);
+      line-height:1.75;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .feature-card{
+      background:#fff;
+      padding:22px;
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(0,0,0,.04);
+    }
+
+    .feature-icon{
+      width:48px;
+      height:48px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:#eef2ff;
+      color:var(--primary);
+      font-size:22px;
+      margin-bottom:14px;
+    }
+
+    .feature-title{
+      font-size:1.08rem;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .feature-text{
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .plans{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+    }
+
+    .plan-card{
+      background:#fff;
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(0,0,0,.05);
+      padding:26px;
+      position:relative;
+    }
+
+    .plan-card.pro{
+      border:2px solid #c7d2fe;
+    }
+
+    .badge{
+      position:absolute;
+      top:18px;
+      right:18px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary-dark);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .plan-name{
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:10px;
+    }
+
+    .price{
+      font-size:3rem;
+      font-weight:900;
+      letter-spacing:-.05em;
+      margin-bottom:8px;
+    }
+
+    .price small{
+      font-size:1rem;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .plan-copy{
+      color:var(--muted);
+      line-height:1.7;
+      margin-bottom:18px;
+    }
+
+    .features{
+      list-style:none;
+      padding:0;
+      margin:0 0 22px;
+      display:grid;
+      gap:12px;
+    }
+
+    .features li{
+      color:var(--muted);
+      display:flex;
+      gap:10px;
+      line-height:1.5;
+    }
+
+    .features li::before{
+      content:"✓";
+      color:var(--success);
+      font-weight:900;
+    }
+
+    .cta{
+      padding:0 0 70px;
+    }
+
+    .cta-box{
+      background:linear-gradient(135deg,#eef2ff,#dbeafe);
+      border-radius:28px;
+      padding:34px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+      border:1px solid rgba(79,70,229,.08);
+    }
+
+    .footer{
+      padding:24px 0 48px;
+      color:var(--muted);
+      font-size:14px;
+      border-top:1px solid rgba(0,0,0,.06);
+    }
+
+    .footer-row{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width:1100px){
+      .hero-grid,
+      .stats-grid,
+      .bottom-grid,
+      .grid-3,
+      .plans{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:860px){
+      .dashboard-layout{grid-template-columns:1fr}
+      .sidebar{
+        flex-direction:row;
+        justify-content:center;
+        padding:12px;
+      }
+      .nav-links{display:none}
+      .donuts{grid-template-columns:1fr 1fr}
+    }
+
+    @media (max-width:680px){
+      .hero{padding-top:40px}
+      .dash-topbar{padding:14px 16px}
+      .dash-content{padding:16px}
+      .top-tabs{gap:14px;font-size:13px}
+      .donuts{grid-template-columns:1fr}
+      .cta-box{flex-direction:column;align-items:flex-start}
+      .metric-big{font-size:2.6rem}
     }
   </style>
 </head>
-
 <body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="#" class="brand">
+        <div class="brand-badge">S</div>
+        <div>
+          <div>SBD</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;">Simple Business Dashboards</div>
+        </div>
+      </a>
 
-<h1>SBD</h1>
-<p>Simple Business Dashboard</p>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#preview">Preview</a>
+        <a href="#pricing">Pricing</a>
+      </div>
 
-<div class="card">
-<h2>$45,000</h2>
-<p>Revenue</p>
-</div>
+      <a href="#pricing" class="btn btn-primary">Get Early Access</a>
+    </div>
+  </nav>
 
-<div class="card">
-<h2>320</h2>
-<p>Orders</p>
-</div>
+  <header class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="pill">Business intelligence without the learning curve</div>
+        <h1>Beautiful dashboards for businesses that just want clear answers.</h1>
+        <p class="hero-copy">
+          SBD helps owners, managers, and operators turn simple numbers into polished dashboard views that reveal trends,
+          performance, and problems fast — without Excel, Tableau, or Power BI.
+        </p>
 
-<div class="card">
-<h2>$12,000</h2>
-<p>Profit</p>
-</div>
+        <div class="hero-actions">
+          <a href="#pricing" class="btn btn-primary">Start with Logistics</a>
+          <a href="#preview" class="btn btn-secondary">See Dashboard</a>
+        </div>
 
-<div class="card">
-<h2>6%</h2>
-<p>Growth</p>
-</div>
+        <div class="hero-proof">
+          <span>Simple monthly inputs</span>
+          <span>Professional visuals</span>
+          <span>Built for real business decisions</span>
+        </div>
+      </div>
 
-<p>Coming Soon: Data Visualization Dashboards</p>
+      <div class="dashboard-shell" id="preview">
+        <div class="dashboard-layout">
+          <aside class="sidebar">
+            <div class="side-logo">S</div>
+            <div class="side-icon">⌂</div>
+            <div class="side-icon">▦</div>
+            <div class="side-icon">⌁</div>
+            <div class="side-icon">☰</div>
+            <div class="side-icon">⚙</div>
+          </aside>
 
+          <div class="dash-main">
+            <div class="dash-topbar">
+              <div class="top-tabs">
+                <span>Orders</span>
+                <span>Employees</span>
+                <span>Tasks</span>
+                <span>Warehouse</span>
+                <span class="active">Dashboard</span>
+              </div>
+              <div style="color:var(--muted);font-weight:600;">Updated: Mar 2026</div>
+            </div>
+
+            <div class="dash-content">
+              <div class="dash-title">
+                <h2>Logistics Dashboard</h2>
+                <div class="date-chip">Monthly Performance View</div>
+              </div>
+
+              <div class="stats-grid">
+                <div class="left-stats">
+                  <div class="card">
+                    <div class="metric-label">Out of Stock Items</div>
+                    <div class="metric-big">503<span class="metric-dot"></span></div>
+                  </div>
+
+                  <div class="card">
+                    <div class="metric-label">Open Shipments</div>
+                    <div class="metric-big">131,225<span class="metric-dot"></span></div>
+                  </div>
+                </div>
+
+                <div class="card chart-card">
+                  <h3>Shipments & Cost</h3>
+                  <div class="chart-area">
+                    <svg class="chart-svg" viewBox="0 0 900 270" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="ship1" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stop-color="#8b5cf6" stop-opacity=".32"/>
+                          <stop offset="100%" stop-color="#8b5cf6" stop-opacity=".05"/>
+                        </linearGradient>
+                        <linearGradient id="ship2" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stop-color="#a78bfa" stop-opacity=".24"/>
+                          <stop offset="100%" stop-color="#a78bfa" stop-opacity=".02"/>
+                        </linearGradient>
+                      </defs>
+
+                      <path d="M0,180 C60,32 100,55 145,118 C190,184 235,112 290,84 C350,50 402,88 455,142 C508,188 560,72 620,94 C675,115 725,172 780,175 C835,179 870,150 900,132 L900,270 L0,270 Z" fill="url(#ship1)"></path>
+                      <path d="M0,164 C55,20 110,42 165,96 C230,157 278,66 335,62 C392,58 448,125 500,168 C560,214 620,54 680,74 C730,91 790,162 850,168 C876,170 890,160 900,148 L900,270 L0,270 Z" fill="url(#ship2)"></path>
+
+                      <path d="M0,180 C60,32 100,55 145,118 C190,184 235,112 290,84 C350,50 402,88 455,142 C508,188 560,72 620,94 C675,115 725,172 780,175 C835,179 870,150 900,132" fill="none" stroke="#6d28d9" stroke-width="4"></path>
+                      <path d="M0,164 C55,20 110,42 165,96 C230,157 278,66 335,62 C392,58 448,125 500,168 C560,214 620,54 680,74 C730,91 790,162 850,168 C876,170 890,160 900,148" fill="none" stroke="#a78bfa" stroke-width="4"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bottom-grid">
+                <div class="card donut-card">
+                  <h3>Integrated Analytics</h3>
+                  <div class="donuts">
+                    <div class="donut-box">
+                      <div class="donut orange"></div>
+                      <div class="donut-stat">62%</div>
+                      <div style="color:var(--muted);font-size:13px;">Shipping Mix</div>
+                    </div>
+
+                    <div class="donut-box">
+                      <div class="donut purple"></div>
+                      <div class="donut-stat">48%</div>
+                      <div style="color:var(--muted);font-size:13px;">Status Ratio</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card table-card">
+                  <h3>Shipping Details</h3>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Account</th>
+                          <th>Status</th>
+                          <th>Criticality</th>
+                          <th>Order #</th>
+                          <th>Costs</th>
+                          <th>Shipments</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Abatz</td>
+                          <td>Closed</td>
+                          <td>Critical</td>
+                          <td>15127-004</td>
+                          <td>$5,538</td>
+                          <td>320</td>
+                        </tr>
+                        <tr>
+                          <td>Agimba</td>
+                          <td>New</td>
+                          <td>Low</td>
+                          <td>54868-6175</td>
+                          <td>$2,375</td>
+                          <td>320</td>
+                        </tr>
+                        <tr>
+                          <td>North Yard</td>
+                          <td>Open</td>
+                          <td>Medium</td>
+                          <td>0115-5212</td>
+                          <td>$4,784</td>
+                          <td>472</td>
+                        </tr>
+                        <tr>
+                          <td>Blue Route</td>
+                          <td>Closed</td>
+                          <td>Low</td>
+                          <td>37808-648</td>
+                          <td>$5,916</td>
+                          <td>320</td>
+                        </tr>
+                        <tr>
+                          <td>West Hub</td>
+                          <td>Open</td>
+                          <td>High</td>
+                          <td>54868-6375</td>
+                          <td>$5,814</td>
+                          <td>485</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">Why customers will like it</div>
+        <h2>Looks premium. Feels simple. Helps businesses make decisions faster.</h2>
+        <div class="section-copy">
+          Your screenshots all point to the same winning formula: clean panels, strong numbers, clear charts, and business-friendly layout.
+          That is exactly what SBD should deliver.
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Professional dashboard views</div>
+          <div class="feature-text">
+            Card-based layouts, charts, tables, and trend blocks that feel like high-end SaaS software.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🚚</div>
+          <div class="feature-title">Use by business function</div>
+          <div class="feature-text">
+            Logistics first, then retail, stores, finance, and operations using the same polished system.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Simple data input</div>
+          <div class="feature-text">
+            Users type in numbers and immediately see a premium dashboard without learning analytics tools.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">Pricing</div>
+        <h2>Two clear plans. No confusion.</h2>
+        <div class="section-copy">
+          Keep it simple for launch. Let the design and ease of use do the selling.
+        </div>
+      </div>
+
+      <div class="plans">
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="price">$20<small>/month</small></div>
+          <div class="plan-copy">
+            Perfect for one business or a small team that wants beautiful dashboards without complexity.
+          </div>
+          <ul class="features">
+            <li>1 user</li>
+            <li>Up to 5 client accounts</li>
+            <li>12 months history</li>
+            <li>Dashboard visuals</li>
+            <li>PNG export</li>
+          </ul>
+          <a href="#" class="btn btn-secondary">Choose Starter</a>
+        </div>
+
+        <div class="plan-card pro">
+          <div class="badge">Popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="price">$39<small>/month</small></div>
+          <div class="plan-copy">
+            Great for consultants, managers, and operators handling multiple businesses or locations.
+          </div>
+          <ul class="features">
+            <li>1 user</li>
+            <li>Up to 20 client accounts</li>
+            <li>Unlimited history</li>
+            <li>Shareable reports</li>
+            <li>PDF export</li>
+          </ul>
+          <a href="#" class="btn btn-primary">Choose Pro</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <div class="cta-box">
+        <div>
+          <div class="kicker">Launch direction</div>
+          <h2 style="margin:0 0 10px;">Start with logistics. Add the rest as coming soon.</h2>
+          <div class="section-copy">
+            This gives you one clear product to test while setting up future functions your customers can grow into.
+          </div>
+        </div>
+        <a href="#" class="btn btn-primary">Request Early Access</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-row">
+      <div>© <span id="year"></span> SBD — Simple Business Dashboards</div>
+      <div>Designed for clear decisions, modern visuals, and simple business reporting.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
