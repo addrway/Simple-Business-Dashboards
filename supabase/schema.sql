@@ -1,0 +1,15 @@
+create extension if not exists "pgcrypto";
+
+do $$ begin create type dashboard_type as enum ('logistics', 'retail', 'custom'); exception when duplicate_object then null; end $$;
+
+create table if not exists public.profiles (id uuid primary key references auth.users(id) on delete cascade, full_name text, role text not null default 'user', created_at timestamptz not null default now());
+create table if not exists public.businesses (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, name text not null, dashboard_type dashboard_type not null default 'retail', created_at timestamptz not null default now());
+create table if not exists public.dashboard_templates (id uuid primary key default gen_random_uuid(), name text not null, type dashboard_type not null unique, description text not null, created_at timestamptz not null default now());
+create table if not exists public.user_dashboards (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, business_id uuid not null references public.businesses(id) on delete cascade, template_id uuid references public.dashboard_templates(id) on delete set null, title text not null, type dashboard_type not null, created_at timestamptz not null default now());
+create table if not exists public.metrics (id uuid primary key default gen_random_uuid(), business_id uuid not null references public.businesses(id) on delete cascade, name text not null, unit text not null, dashboard_type dashboard_type not null, created_at timestamptz not null default now(), unique (business_id, name));
+create table if not exists public.metric_entries (id uuid primary key default gen_random_uuid(), metric_id uuid not null references public.metrics(id) on delete cascade, value numeric not null, entry_date date not null, note text, created_at timestamptz not null default now());
+create table if not exists public.custom_charts (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, business_id uuid not null references public.businesses(id) on delete cascade, title text not null, chart_type text not null check (chart_type in ('line','bar','pie')), metric_id uuid references public.metrics(id) on delete set null, created_at timestamptz not null default now());
+
+insert into public.dashboard_templates (name,type,description) values ('Logistics','logistics','Deliveries, on-time rate, fuel cost, and daily operations.'),('Retail','retail','Sales, orders, average ticket, and store performance.'),('Custom','custom','Flexible metrics for any business workflow.') on conflict do nothing;
+
+alter table public.profiles enable row level security; alter table public.businesses enable row level security; alter table public.dashboard_templates enable row level security; alter table public.user_dashboards enable row level security; alter table public.metrics enable row level security; alter table public.metric_entries enable row level security; alter table public.custom_charts enable row level security;
