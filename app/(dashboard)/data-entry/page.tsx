@@ -64,7 +64,7 @@ export default function DataEntryPage() {
       {entryCount(metrics) === 0 ? (
         <EmptyState
           title="Add your first number"
-          description="Pick a metric above, enter today’s value, and SBD will update the Command Center and dashboard charts automatically."
+          description="Pick a metric above, enter today's value, and SBD will update the Command Center and dashboard charts automatically."
         />
       ) : null}
       <MetricTable rows={tableRows(metrics)} />
