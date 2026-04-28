@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { Banknote, Boxes, PackageCheck, ReceiptText, RotateCcw, ShoppingCart } from "lucide-react";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { DataEntryForm } from "@/components/dashboard/DataEntryForm";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { GaugeCard } from "@/components/dashboard/GaugeCard";
 import { KPIcard } from "@/components/dashboard/KPIcard";
 import { MetricTable } from "@/components/dashboard/MetricTable";
 import { ensureDefaultMetrics, getBusiness, getMetrics, getSessionUser, type MetricWithEntries } from "@/lib/data";
-import { tableRows } from "@/lib/dashboard";
+import { hasEntries, tableRows } from "@/lib/dashboard";
 import {
   averageOrderValue,
   categorySalesData,
@@ -69,6 +70,7 @@ export function RetailDashboard() {
   const inventorySold = retailLatest(metrics, "Inventory Sold");
   const profitRate = sales ? (profit / sales) * 100 : 0;
   const rows = tableRows(metrics);
+  const hasSavedEntries = hasEntries(metrics);
 
   return (
     <div className="space-y-6 p-4 md:p-8">
@@ -76,6 +78,15 @@ export function RetailDashboard() {
         <p className="text-sm text-muted-foreground">{business?.name ?? "Your business"}</p>
         <h2 className="text-2xl font-semibold">Retail Dashboard</h2>
       </div>
+
+      {!hasSavedEntries ? (
+        <EmptyState
+          title="Add sales numbers to activate this dashboard"
+          description="Use Quick Data Entry below to record Sales, Orders, Expenses, Returns, Inventory Sold, or Category Sales."
+          actionLabel="Start Entering Data"
+          onAction={() => document.getElementById("retail-entry")?.scrollIntoView({ behavior: "smooth" })}
+        />
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KPIcard label="Sales" value={sales} unit="$" trend={retailTrend(metrics, "Sales")} icon={Banknote} accent="emerald" />
@@ -90,7 +101,9 @@ export function RetailDashboard() {
         <KPIcard label="Inventory Sold" value={inventorySold} unit="items" trend={retailTrend(metrics, "Inventory Sold")} icon={Boxes} accent="emerald" />
       </div>
 
-      <DataEntryForm metrics={metrics} onSaved={load} />
+      <div id="retail-entry">
+        <DataEntryForm metrics={metrics} onSaved={load} />
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">

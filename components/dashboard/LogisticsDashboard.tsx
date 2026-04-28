@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, Clock, Fuel, MapPinned, PackageCheck, Timer, Truck } from "lucide-react";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { DataEntryForm } from "@/components/dashboard/DataEntryForm";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { GaugeCard } from "@/components/dashboard/GaugeCard";
 import { KPIcard } from "@/components/dashboard/KPIcard";
 import { MetricTable } from "@/components/dashboard/MetricTable";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ensureDefaultMetrics, getBusiness, getMetrics, getSessionUser, type MetricWithEntries } from "@/lib/data";
-import { tableRows } from "@/lib/dashboard";
+import { hasEntries, tableRows } from "@/lib/dashboard";
 import {
   costPerDelivery,
   deliveryStatusData,
@@ -93,6 +94,7 @@ export function LogisticsDashboard() {
   const regionData = regionBreakdownData(metrics);
   const problemAreas = topProblemAreas(metrics);
   const rows = tableRows(metrics);
+  const hasSavedEntries = hasEntries(metrics);
 
   return (
     <div className="space-y-6 p-4 md:p-8">
@@ -100,6 +102,15 @@ export function LogisticsDashboard() {
         <p className="text-sm text-muted-foreground">{business?.name ?? "Your business"}</p>
         <h2 className="text-2xl font-semibold">Logistics Dashboard</h2>
       </div>
+
+      {!hasSavedEntries ? (
+        <EmptyState
+          title="Add delivery numbers to activate this dashboard"
+          description="Use Quick Data Entry below to record Deliveries, On-Time Deliveries, Late Deliveries, Fuel Cost, Labor Hours, or Region Volume."
+          actionLabel="Start Entering Data"
+          onAction={() => document.getElementById("logistics-entry")?.scrollIntoView({ behavior: "smooth" })}
+        />
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KPIcard label="Total Deliveries" value={deliveries} unit="orders" trend={metricTrend(metrics, "Deliveries")} icon={Truck} accent="blue" />
@@ -114,7 +125,9 @@ export function LogisticsDashboard() {
         <MiniStat icon={Truck} label="Total Cost" value={`$${formatNumber(totalCost)}`} />
       </div>
 
-      <DataEntryForm metrics={metrics} onSaved={load} />
+      <div id="logistics-entry">
+        <DataEntryForm metrics={metrics} onSaved={load} />
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">

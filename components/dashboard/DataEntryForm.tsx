@@ -35,7 +35,12 @@ export function DataEntryForm({ metrics, onSaved }: { metrics: MetricWithEntries
     setSaving(true);
     setMessage("");
     try {
-      await saveMetricEntry(metricId, Number(value), entryDate, note);
+      const numericValue = Number(value);
+      if (!Number.isFinite(numericValue)) {
+        setMessage("Enter a valid number before saving.");
+        return;
+      }
+      await saveMetricEntry(metricId, numericValue, entryDate, note);
       setValue("");
       setNote("");
       setMessage("Saved. Your charts are updated.");

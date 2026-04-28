@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { CustomGraphForm } from "@/components/dashboard/CustomGraphForm";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { getBusiness, getCustomCharts, getMetrics, getSessionUser, type MetricWithEntries } from "@/lib/data";
-import { latestMetricData, lineData } from "@/lib/dashboard";
+import { hasEntries, latestMetricData, lineData } from "@/lib/dashboard";
 import type { Business, CustomChart } from "@/types/database";
 
 export default function CustomPage() {
@@ -55,10 +56,25 @@ export default function CustomPage() {
         <p className="text-sm text-muted-foreground">{business.name}</p>
         <h2 className="text-2xl font-semibold">Custom Graph Builder</h2>
       </div>
+      {metrics.length === 0 ? (
+        <EmptyState
+          title="Create metrics before building graphs"
+          description="Open Settings, choose a dashboard type, and save your business profile. SBD will create starter metrics for custom charts."
+          actionLabel="Open Settings"
+          onAction={() => router.push("/settings")}
+        />
+      ) : !hasEntries(metrics) ? (
+        <EmptyState
+          title="Enter data before reading custom graphs"
+          description="Create a graph now if you want, then go to Data Entry and save values so the chart has real Supabase data to show."
+          actionLabel="Go to Data Entry"
+          onAction={() => router.push("/data-entry")}
+        />
+      ) : null}
       <CustomGraphForm userId={userId} businessId={business.id} metrics={metrics} onCreated={load} />
       <div className="grid gap-4 xl:grid-cols-2">
         {charts.length === 0 ? (
-          <ChartCard title="Preview" type="line" data={lineData(metrics[0])} />
+          <ChartCard title="Preview" description="Create a graph above to save your first custom view." type="line" data={lineData(metrics[0])} />
         ) : (
           charts.map((chart) => {
             const metric = metrics.find((item) => item.id === chart.metric_id) ?? metrics[0];

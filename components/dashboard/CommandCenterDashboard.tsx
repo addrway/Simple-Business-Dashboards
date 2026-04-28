@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Banknote, Gauge, PackageCheck, Truck } from "lucide-react";
 import { ChartCard } from "@/components/dashboard/ChartCard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { GaugeCard } from "@/components/dashboard/GaugeCard";
 import { KPIcard } from "@/components/dashboard/KPIcard";
 import { MetricTable } from "@/components/dashboard/MetricTable";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBusiness, getMetrics, getSessionUser, type MetricWithEntries } from "@/lib/data";
-import { latestMetricData, latestValue, lineData, tableRows, trend } from "@/lib/dashboard";
+import { entryCount, hasEntries, latestMetricData, latestValue, lineData, tableRows, trend } from "@/lib/dashboard";
 import { deliveryStatusData, findMetric, onTimeDeliveryRate, regionBreakdownData } from "@/lib/logistics";
 import { averageOrderValue, categorySalesData, findRetailMetric, profitEstimate, salesTrendData } from "@/lib/retail";
 import type { Business } from "@/types/database";
@@ -75,6 +76,7 @@ export function CommandCenterDashboard() {
   const onTimeRate = onTimeDeliveryRate(metrics);
   const profit = profitEstimate(metrics);
   const latestMix = latestMetricData(metrics).filter((item) => item.value > 0).slice(0, 6);
+  const hasSavedEntries = hasEntries(metrics);
 
   return (
     <div className="space-y-6 p-4 md:p-8">
@@ -84,11 +86,19 @@ export function CommandCenterDashboard() {
       </div>
 
       {metrics.length === 0 ? (
-        <Card className="border-0 bg-white shadow-sm ring-1 ring-slate-200/80">
-          <CardContent className="p-5 text-sm text-muted-foreground">
-            No metrics yet. Choose a dashboard type in Settings to create starter metrics.
-          </CardContent>
-        </Card>
+        <EmptyState
+          title="Set up your business profile"
+          description="Open Settings, enter your business name, and choose Logistics, Retail, or Custom to create starter metrics."
+          actionLabel="Open Settings"
+          onAction={() => router.push("/settings")}
+        />
+      ) : !hasSavedEntries ? (
+        <EmptyState
+          title="Your dashboard is ready for data"
+          description="Go to Data Entry and save your first numbers. KPI cards, charts, and tables will update from Supabase automatically."
+          actionLabel="Enter Data"
+          onAction={() => router.push("/data-entry")}
+        />
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -143,7 +153,7 @@ export function CommandCenterDashboard() {
           </div>
           <div className="rounded-lg bg-slate-50 p-4">
             <p className="text-sm text-slate-500">Recent entries</p>
-            <p className="mt-2 text-2xl font-semibold">{tableRows(metrics).length}</p>
+            <p className="mt-2 text-2xl font-semibold">{entryCount(metrics)}</p>
           </div>
         </CardContent>
       </Card>

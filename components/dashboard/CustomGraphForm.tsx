@@ -24,6 +24,7 @@ export function CustomGraphForm({
   const [chartType, setChartType] = useState("line");
   const [metricId, setMetricId] = useState(metrics[0]?.id ?? "");
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!metricId && metrics[0]) {
@@ -36,12 +37,19 @@ export function CustomGraphForm({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!metricId) return;
+    if (!metricId) {
+      setMessage("Create metrics before saving a custom graph.");
+      return;
+    }
     setSaving(true);
+    setMessage("");
     try {
       await createCustomChart(userId, businessId, title, chartType, metricId);
       setTitle("");
+      setMessage("Graph created.");
       await onCreated();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not create graph.");
     } finally {
       setSaving(false);
     }
@@ -83,6 +91,7 @@ export function CustomGraphForm({
               <PlusCircle className="h-4 w-4" />
               {saving ? "Creating..." : "Create graph"}
             </Button>
+            {message && <span className="ml-3 text-sm text-slate-500">{message}</span>}
           </div>
         </form>
       </CardContent>

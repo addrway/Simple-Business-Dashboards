@@ -21,6 +21,14 @@ export function trend(metric: MetricWithEntries) {
   return ((current - previous) / previous) * 100;
 }
 
+export function hasEntries(metrics: MetricWithEntries[]) {
+  return metrics.some((metric) => metric.metric_entries.length > 0);
+}
+
+export function entryCount(metrics: MetricWithEntries[]) {
+  return metrics.reduce((count, metric) => count + metric.metric_entries.length, 0);
+}
+
 export function lineData(metric?: MetricWithEntries) {
   if (!metric) return [];
   const entries = sortedEntries(metric);

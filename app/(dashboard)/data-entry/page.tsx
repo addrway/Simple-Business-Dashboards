@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataEntryForm } from "@/components/dashboard/DataEntryForm";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MetricTable } from "@/components/dashboard/MetricTable";
-import { getBusiness, getMetrics, getSessionUser, type MetricWithEntries } from "@/lib/data";
-import { tableRows } from "@/lib/dashboard";
+import { ensureDefaultMetrics, getBusiness, getMetrics, getSessionUser, type MetricWithEntries } from "@/lib/data";
+import { entryCount, tableRows } from "@/lib/dashboard";
 import type { Business } from "@/types/database";
 
 export default function DataEntryPage() {
@@ -27,6 +28,7 @@ export default function DataEntryPage() {
         router.push("/settings");
         return;
       }
+      await ensureDefaultMetrics(businessData.id, businessData.dashboard_type);
       setBusiness(businessData);
       setMetrics(await getMetrics(businessData.id));
       setError("");
@@ -50,7 +52,21 @@ export default function DataEntryPage() {
         <p className="text-sm text-muted-foreground">{business.name}</p>
         <h2 className="text-2xl font-semibold">Data Entry</h2>
       </div>
+      {metrics.length === 0 ? (
+        <EmptyState
+          title="No metrics are set up yet"
+          description="Go back to Settings, choose Logistics, Retail, or Custom, and save your business profile to create starter metrics."
+          actionLabel="Open Settings"
+          onAction={() => router.push("/settings")}
+        />
+      ) : null}
       <DataEntryForm metrics={metrics} onSaved={load} />
+      {entryCount(metrics) === 0 ? (
+        <EmptyState
+          title="Add your first number"
+          description="Pick a metric above, enter today’s value, and SBD will update the Command Center and dashboard charts automatically."
+        />
+      ) : null}
       <MetricTable rows={tableRows(metrics)} />
     </div>
   );
