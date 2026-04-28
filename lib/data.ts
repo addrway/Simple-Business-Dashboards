@@ -94,7 +94,12 @@ export async function ensureDefaultMetrics(businessId: string, dashboardType: Da
     retail: [
       { name: "Sales", unit: "$" },
       { name: "Orders", unit: "orders" },
-      { name: "Average Ticket", unit: "$" }
+      { name: "Expenses", unit: "$" },
+      { name: "Profit Estimate", unit: "$" },
+      { name: "Average Order Value", unit: "$" },
+      { name: "Category Sales", unit: "$" },
+      { name: "Returns", unit: "orders" },
+      { name: "Inventory Sold", unit: "items" }
     ],
     custom: [
       { name: "Revenue", unit: "$" },

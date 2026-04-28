@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, Clock, Fuel, MapPinned, PackageCheck, Timer, Truck } from "lucide-react";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { DataEntryForm } from "@/components/dashboard/DataEntryForm";
+import { GaugeCard } from "@/components/dashboard/GaugeCard";
 import { KPIcard } from "@/components/dashboard/KPIcard";
 import { MetricTable } from "@/components/dashboard/MetricTable";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,10 +102,10 @@ export function LogisticsDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KPIcard label="Total Deliveries" value={deliveries} unit="orders" trend={metricTrend(metrics, "Deliveries")} />
-        <KPIcard label="On-Time Delivery %" value={onTimeRate} unit="%" trend={metricTrend(metrics, "On-Time Deliveries")} />
-        <KPIcard label="Late Deliveries" value={lateDeliveries} unit="orders" trend={metricTrend(metrics, "Late Deliveries")} />
-        <KPIcard label="Cost per Delivery" value={costPerStop} unit="$" trend={metricTrend(metrics, "Cost Per Delivery")} />
+        <KPIcard label="Total Deliveries" value={deliveries} unit="orders" trend={metricTrend(metrics, "Deliveries")} icon={Truck} accent="blue" />
+        <KPIcard label="On-Time Deliveries" value={metricLatest(metrics, "On-Time Deliveries")} unit="orders" trend={metricTrend(metrics, "On-Time Deliveries")} icon={PackageCheck} />
+        <KPIcard label="Late Deliveries" value={lateDeliveries} unit="orders" trend={metricTrend(metrics, "Late Deliveries")} icon={AlertTriangle} accent="red" />
+        <KPIcard label="Cost per Delivery" value={costPerStop} unit="$" trend={metricTrend(metrics, "Cost Per Delivery")} icon={Fuel} accent="amber" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -117,15 +118,25 @@ export function LogisticsDashboard() {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <ChartCard title="Daily Volume Trend" type="line" data={metricLineData(deliveryMetric)} />
+          <ChartCard
+            title="Daily Delivery Trend"
+            description="How many deliveries were recorded each day."
+            type="line"
+            data={metricLineData(deliveryMetric)}
+            height="h-80"
+          />
         </div>
-        <ChartCard title="Delivery Status Breakdown" type="pie" data={statusData} />
+        <GaugeCard
+          title="On-Time Percentage"
+          value={onTimeRate}
+          description="Latest on-time deliveries divided by total deliveries."
+          explanation={onTimeRate >= 90 ? "Strong service level" : onTimeRate >= 75 ? "Watch this closely" : "Needs attention"}
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <ChartCard title="Region Breakdown" type="bar" data={regionData} />
-        </div>
+        <ChartCard title="Delivery Status Breakdown" description="On-time, late, and unclassified deliveries." type="pie" data={statusData} />
+        <ChartCard title="Region / City Performance" description="Use notes on Region Volume entries for city or route names." type="bar" data={regionData} />
         <Card>
           <CardHeader>
             <CardTitle>Top Problem Areas</CardTitle>
@@ -153,7 +164,10 @@ export function LogisticsDashboard() {
         </Card>
       </div>
 
-      <MetricTable rows={rows} />
+      <div className="space-y-3">
+        <h3 className="text-base font-semibold">Recent Delivery Entries</h3>
+        <MetricTable rows={rows} />
+      </div>
     </div>
   );
 }
