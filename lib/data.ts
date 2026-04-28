@@ -83,8 +83,13 @@ export async function ensureDefaultMetrics(businessId: string, dashboardType: Da
   const metricSeeds: Record<DashboardType, Array<{ name: string; unit: string }>> = {
     logistics: [
       { name: "Deliveries", unit: "orders" },
-      { name: "On-time Rate", unit: "%" },
-      { name: "Fuel Cost", unit: "$" }
+      { name: "On-Time Deliveries", unit: "orders" },
+      { name: "Late Deliveries", unit: "orders" },
+      { name: "Fuel Cost", unit: "$" },
+      { name: "Labor Hours", unit: "hours" },
+      { name: "Total Cost", unit: "$" },
+      { name: "Cost Per Delivery", unit: "$" },
+      { name: "Region Volume", unit: "orders" }
     ],
     retail: [
       { name: "Sales", unit: "$" },
