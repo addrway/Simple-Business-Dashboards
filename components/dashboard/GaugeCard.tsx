@@ -4,15 +4,27 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
 
+type GaugeTooltipDatum = {
+  name: string;
+  value: number;
+  date?: string;
+  explanation?: string;
+};
+
+type GaugeTooltipPayload = {
+  payload?: GaugeTooltipDatum;
+};
+
 function GaugeTooltip({
   active,
   payload
 }: {
   active?: boolean;
-  payload?: Array<{ payload: { name: string; value: number; date?: string; explanation?: string } }>;
+  payload?: GaugeTooltipPayload[];
 }) {
   if (!active || !payload?.length) return null;
   const item = payload[0].payload;
+  if (!item) return null;
 
   return (
     <div className="rounded-lg border bg-white p-3 text-sm shadow-lg">
@@ -36,7 +48,7 @@ export function GaugeCard({
   explanation: string;
 }) {
   const safeValue = Math.max(0, Math.min(value, 100));
-  const data = [
+  const data: GaugeTooltipDatum[] = [
     { name: title, value: safeValue, explanation },
     { name: "Remaining", value: 100 - safeValue, explanation: "Room to improve" }
   ];

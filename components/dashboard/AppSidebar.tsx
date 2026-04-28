@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Home, LineChart, PackageCheck, Settings, Shield, ShoppingBag, SlidersHorizontal, TableProperties } from "lucide-react";
+import { BarChart3, Home, PackageCheck, Settings, Shield, ShoppingBag, SlidersHorizontal, TableProperties } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [

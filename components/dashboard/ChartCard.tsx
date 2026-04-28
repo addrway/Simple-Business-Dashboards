@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -25,15 +26,24 @@ type ChartDatum = {
   explanation?: string;
 };
 
+type TooltipPayload = {
+  payload?: ChartDatum;
+  value?: number | string;
+};
+
 const palette = ["#047857", "#2563eb", "#f59e0b", "#dc2626", "#7c3aed"];
 
-function DashboardTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ payload: ChartDatum; value: number }>; label?: string }) {
+function DashboardTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: ReactNode }) {
   if (!active || !payload?.length) return null;
   const item = payload[0].payload;
+  if (!item) return null;
+  const rawValue = payload[0].value ?? item.value;
+  const value = typeof rawValue === "number" ? rawValue.toLocaleString() : rawValue;
+
   return (
     <div className="rounded-lg border bg-white p-3 text-sm shadow-lg">
       <p className="font-medium text-slate-950">{label ?? item.name}</p>
-      <p className="text-slate-500">Value: {payload[0].value.toLocaleString()}</p>
+      <p className="text-slate-500">Value: {value}</p>
       <p className="text-slate-500">Date: {item.date ?? "Latest"}</p>
       <p className={item.trend && item.trend < 0 ? "font-medium text-red-600" : "font-medium text-emerald-700"}>
         {item.explanation ?? "No previous entry yet"}
