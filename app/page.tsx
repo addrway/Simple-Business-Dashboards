@@ -1,54 +1,59 @@
-const bars = [42, 74, 58, 88, 67, 95, 80];
-const rows = [
-  ["Deliveries", "942", "Apr 27", "Up 12%"],
-  ["On-time rate", "96%", "Apr 27", "Up 4%"],
-  ["Retail sales", "$18,420", "Apr 27", "Up 19%"],
-  ["Orders", "318", "Apr 27", "Down 3%"]
-];
+import Link from "next/link";
+import { ArrowRight, BarChart3, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <main className="shell">
-      <aside className="sidebar">
-        <div className="brand"><span className="logo">S</span><span>SBD<br/><small>Simple dashboards</small></span></div>
-        <nav className="nav">
-          <a href="#command">Command Center</a>
-          <a href="#logistics">Logistics</a>
-          <a href="#retail">Retail</a>
-          <a href="#custom">Custom Builder</a>
-          <a href="#data">Data Entry</a>
-          <a href="#settings">Settings</a>
-        </nav>
-      </aside>
-      <section className="main">
-        <header className="top"><strong>Simple Business Dashboard</strong><span>Phase 1</span></header>
-        <div className="content">
-          <section className="hero panel">
-            <div>
-              <div className="eyebrow">Premium SaaS dashboards for everyday businesses</div>
-              <h1>SBD</h1>
-              <p>Sign up, create a business profile, choose Logistics, Retail, or Custom, enter simple numbers, and get dashboards that update automatically from Supabase.</p>
-              <div className="buttons"><a className="button primary" href="#command">View dashboard</a><a className="button" href="#data">Enter data</a></div>
+    <main className="min-h-screen bg-white">
+      <section className="grid min-h-[92vh] items-center gap-10 px-6 py-10 md:px-12 lg:grid-cols-[1fr_0.9fr]">
+        <div className="max-w-2xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-md border bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
+            <BarChart3 className="h-4 w-4" />
+            Simple Business Dashboard
+          </div>
+          <h1 className="text-4xl font-semibold tracking-normal md:text-6xl">SBD</h1>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
+            Premium dashboards for small businesses that want clear numbers, clean charts, and no technical setup.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/signup">
+                Start free
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/login">Log in</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="rounded-lg border bg-slate-950 p-5 shadow-soft">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {["Sales", "Deliveries", "Customers"].map((label, index) => (
+              <div key={label} className="rounded-md bg-white p-4">
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="mt-2 text-2xl font-semibold">{["$18k", "942", "128"][index]}</p>
+                <p className="mt-3 text-xs text-emerald-700">Up {["12", "8", "19"][index]}%</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 h-72 rounded-md bg-white p-5">
+            <div className="flex h-full items-end gap-3">
+              {[44, 72, 58, 90, 66, 86, 98].map((height, index) => (
+                <div key={index} className="flex flex-1 items-end rounded bg-emerald-100">
+                  <div className="w-full rounded bg-emerald-700" style={{ height: `${height}%` }} />
+                </div>
+              ))}
             </div>
-            <div className="panel">
-              <strong>Dashboard types</strong>
-              <p>Logistics tracks deliveries, on-time rate, and fuel cost. Retail tracks sales, orders, and average ticket. Custom lets teams build their own chart views.</p>
-            </div>
-          </section>
-          <section id="command" className="kpis">
-            <div className="panel kpi"><span>Total sales</span><div className="value">$18,420</div><div className="trend">Up 19% from yesterday</div></div>
-            <div className="panel kpi"><span>Deliveries</span><div className="value">942</div><div className="trend">Up 12% from yesterday</div></div>
-            <div className="panel kpi"><span>On-time rate</span><div className="value">96%</div><div className="trend">Up 4% from yesterday</div></div>
-          </section>
-          <section className="charts">
-            <div className="panel"><strong>Line and bar chart area</strong><div className="bars">{bars.map((height, index)=><div className="bar" key={index} style={{height:`${height}%`}} />)}</div></div>
-            <div className="panel"><strong>Pie chart</strong><div className="pie"/><p>Hover tooltips in the full app show value, date, trend, and a simple explanation.</p></div>
-          </section>
-          <section className="panel table" id="data">
-            <strong>Recent metric entries</strong>
-            <div className="row head"><span>Metric</span><span>Value</span><span>Date</span><span>Trend</span></div>
-            {rows.map((row)=><div className="row" key={row[0]}>{row.map((cell)=><span key={cell}>{cell}</span>)}</div>)}
-          </section>
+          </div>
+          <div className="mt-4 grid gap-2 text-sm text-white sm:grid-cols-3">
+            {["Logistics", "Retail", "Custom"].map((item) => (
+              <div key={item} className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                {item}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </main>
