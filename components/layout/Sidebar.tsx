@@ -1,0 +1,2 @@
+'use client'; import Link from 'next/link'; const links=['/dashboard','/dashboard/projects','/dashboard/finance','/dashboard/sales','/dashboard/logistics','/dashboard/inventory','/dashboard/customers','/dashboard/reports','/dashboard/settings'];
+export default function Sidebar(){return <aside className='w-60 p-4 border-r min-h-screen'>{links.map(h=><div key={h}><Link href={h}>{h.split('/').pop()||'home'}</Link></div>)}</aside>;}

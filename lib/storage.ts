@@ -1,0 +1,1 @@
+export const storage={get<T>(k:string,f:T){if(typeof window==='undefined')return f;try{const r=localStorage.getItem(k);return r?JSON.parse(r) as T:f}catch{return f}},set<T>(k:string,v:T){if(typeof window==='undefined')return;localStorage.setItem(k,JSON.stringify(v));}};
