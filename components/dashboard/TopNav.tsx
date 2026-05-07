@@ -9,7 +9,7 @@ export function TopNav({ title }: { title?: string }) {
   const router = useRouter();
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await supabase?.auth.signOut();
     router.push("/login");
   }
 
@@ -20,8 +20,8 @@ export function TopNav({ title }: { title?: string }) {
           <Menu className="h-5 w-5" />
         </Button>
         <div>
-          <p className="text-sm text-muted-foreground">Simple Business Dashboard</p>
-          <h1 className="text-lg font-semibold">{title ?? "Command Center"}</h1>
+          <p className="text-sm text-slate-500">Multi-AI SaaS workspace</p>
+          <h1 className="text-lg font-semibold">{title ?? "AI Team Workspace"}</h1>
         </div>
       </div>
       <Button variant="outline" onClick={signOut}>
