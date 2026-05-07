@@ -1,6 +1,24 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/server-supabase";
 
+export async function GET(request: Request) {
+  try {
+    const auth = await requireUser(request);
+    if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+    const { data, error } = await auth.supabase
+      .from("projects")
+      .select("id, name, description, created_at, ai_tasks(id, status, created_at)")
+      .eq("user_id", auth.user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return NextResponse.json({ projects: data ?? [] });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Project list failed" }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const auth = await requireUser(request);

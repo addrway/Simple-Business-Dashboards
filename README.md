@@ -1,5 +1,7 @@
 # AI Team Workspace
 
+Repository target: `https://github.com/addrway/Triangle`
+
 AI Team Workspace is a full-stack SaaS app where ChatGPT and Claude collaborate on user tasks. It is intentionally **not** a basic chatbot: each AI has a role, a step in the workflow, and a visible output card.
 
 ## Product flow
@@ -119,10 +121,19 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
+## GitHub target repository
+
+This codebase is prepared for the `addrway/Triangle` repository. If the checkout does not already have that remote, add it with:
+
+```bash
+git remote add origin https://github.com/addrway/Triangle.git
+git push -u origin HEAD
+```
+
 ## Vercel deployment
 
-1. Push this repository to GitHub.
-2. Import the repo into Vercel.
+1. Push this repository to `https://github.com/addrway/Triangle`.
+2. Import `addrway/Triangle` into Vercel.
 3. Add all environment variables listed above in **Project Settings → Environment Variables**.
 4. Run `supabase/schema.sql` in Supabase before the first production test.
 5. Deploy.

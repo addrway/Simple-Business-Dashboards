@@ -47,3 +47,15 @@ export async function requireUser(request: Request) {
 
   return { supabase, user: data.user, token };
 }
+
+export async function requireAdmin(request: Request) {
+  const auth = await requireUser(request);
+  if ("error" in auth) return auth;
+
+  const { data, error } = await auth.supabase.from("profiles").select("role").eq("id", auth.user.id).single();
+  if (error || data?.role !== "admin") {
+    return { error: "Admin access required", status: 403 as const };
+  }
+
+  return auth;
+}

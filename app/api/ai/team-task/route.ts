@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const auth = await requireUser(request);
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
-    const { projectId, projectName, originalPrompt, taskMode } = await request.json();
+    const { projectId, projectName, originalPrompt, taskMode, source } = await request.json();
     if (!originalPrompt || !taskMode) return NextResponse.json({ error: "originalPrompt and taskMode are required" }, { status: 400 });
 
     let activeProjectId = projectId as string | null;
@@ -43,6 +43,10 @@ export async function POST(request: Request) {
       status: "completed"
     }).eq("id", task.id).eq("user_id", auth.user.id);
     if (updateError) throw updateError;
+
+    if (source === "prompt_lab") {
+      await auth.supabase.from("prompt_tests").insert({ user_id: auth.user.id, provider: "both", input: originalPrompt, output: result.finalOutput });
+    }
 
     await auth.supabase.from("usage_logs").insert([
       { user_id: auth.user.id, ai_task_id: task.id, provider: "openai", action: "strategist_draft" },

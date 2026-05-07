@@ -9,6 +9,7 @@ export async function POST(request: Request) {
     const { prompt, system } = await request.json();
     if (!prompt) return NextResponse.json({ error: "prompt is required" }, { status: 400 });
     const output = await callOpenAIResponse(prompt, system ?? "You are a helpful SaaS AI assistant.");
+    await auth.supabase.from("prompt_tests").insert({ user_id: auth.user.id, provider: "openai", input: prompt, output });
     await auth.supabase.from("usage_logs").insert({ user_id: auth.user.id, provider: "openai", action: "prompt_test" });
     return NextResponse.json({ output });
   } catch (error) {

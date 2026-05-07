@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { Bot, Brain, CheckCircle2, Loader2, Save, Sparkles } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import { Bot, CheckCircle2, Loader2, Save, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,11 @@ type TeamResult = {
   chatgptDraft: string;
   claudeReview: string;
   finalOutput: string;
+};
+
+type ProjectOption = {
+  id: string;
+  name: string;
 };
 
 function OutputCard({ title, role, body, tone }: { title: string; role: string; body: string; tone: "blue" | "purple" | "final" }) {
@@ -37,6 +42,7 @@ function OutputCard({ title, role, body, tone }: { title: string; role: string; 
 export function TeamWorkspace() {
   const [projectName, setProjectName] = useState("Default Workspace");
   const [projectId, setProjectId] = useState("");
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [taskMode, setTaskMode] = useState("Build Product");
   const [originalPrompt, setOriginalPrompt] = useState("");
   const [result, setResult] = useState<TeamResult | null>(null);
@@ -48,6 +54,18 @@ export function TeamWorkspace() {
     const { data } = await supabase?.auth.getSession() ?? { data: { session: null } };
     return data.session?.access_token;
   }
+
+  async function loadProjects() {
+    const token = await getToken();
+    if (!token) return;
+    const response = await fetch("/api/projects/create", { headers: { Authorization: `Bearer ${token}` } });
+    const data = await response.json();
+    if (response.ok) setProjects(data.projects ?? []);
+  }
+
+  useEffect(() => {
+    void loadProjects();
+  }, []);
 
   async function runTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -99,8 +117,9 @@ export function TeamWorkspace() {
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700"><Sparkles className="h-4 w-4" /> Jordan + Pippen workflow</div>
           <h2 className="text-3xl font-semibold">Create a task for your AI team.</h2>
           <p className="mt-3 text-sm leading-6 text-slate-500">ChatGPT acts as Strategist/Builder, Claude acts as Critic/Refiner, and a final synthesis step combines both into the finished output.</p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2"><Label>Project name</Label><Input value={projectName} onChange={(event) => setProjectName(event.target.value)} /></div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2"><Label>Existing project</Label><Select value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="">Create new project</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</Select></div>
+            <div className="space-y-2"><Label>New project name</Label><Input value={projectName} onChange={(event) => setProjectName(event.target.value)} disabled={Boolean(projectId)} /></div>
             <div className="space-y-2"><Label>Task mode</Label><Select value={taskMode} onChange={(event) => setTaskMode(event.target.value)}>{taskModes.map((mode) => <option key={mode}>{mode}</option>)}</Select></div>
           </div>
         </div>

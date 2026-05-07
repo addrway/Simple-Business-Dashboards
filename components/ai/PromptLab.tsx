@@ -35,7 +35,7 @@ export function PromptLab() {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
-        body: JSON.stringify(provider === "both" ? { originalPrompt: prompt, taskMode: "Improve Prompt", projectName: "Prompt Lab" } : { prompt, system: "You are testing and improving a reusable SaaS prompt. Return a stronger version plus notes." })
+        body: JSON.stringify(provider === "both" ? { originalPrompt: prompt, taskMode: "Improve Prompt", projectName: "Prompt Lab", source: "prompt_lab" } : { prompt, system: "You are testing and improving a reusable SaaS prompt. Return a stronger version plus notes." })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Prompt test failed");
