@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
+import Papa from "papaparse";
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useAuth } from "./AuthContext";
 import { supabase } from "./supabase";
 
 const modules = ["Finance", "Projects", "Logistics", "Inventory", "Customers", "Reports"];
-const nav = ["Dashboard", "Projects", "Finance", "Logistics", "Inventory", "Customers", "Reports", "AI Agent"];
+const nav = ["Dashboard", "Projects", "Finance", "Logistics & Operations", "Inventory", "Customers", "Reports", "AI Agent"];
 const features = ["Manual forms", "AI Auto-Formulate", "Claude AI Agent", "Live KPIs", "Trial countdown", "Supabase auth", "RLS data", "Mobile layouts", "Vercel hosting"];
 const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
@@ -43,8 +45,8 @@ function DashboardShell({ active, setPage }) {
   const [finance, setFinance] = useState([]);
   async function loadFinance() { setFinance(await supabase.select("finance", "?select=*&order=date.desc,created_at.desc") || []); }
   useEffect(() => { loadFinance().catch(console.error); }, []);
-  const view = active === "finance" ? <Finance rows={finance} reload={loadFinance} /> : active === "ai-agent" ? <Agent rows={finance} /> : active === "dashboard" ? <Dashboard rows={finance} /> : <Coming title={title(active)} />;
-  return <div className="app-shell"><aside className={collapsed ? "sidebar collapsed" : "sidebar"}><button className="sidebar-brand" onClick={() => setCollapsed(!collapsed)}>{collapsed ? "S" : "SBD Pro"}</button>{nav.map((item) => { const key = item.toLowerCase().replaceAll(" ", "-"); return <button className={active === key ? "active" : ""} key={item} onClick={() => setPage(key)}>{collapsed ? item[0] : item}</button>; })}</aside><section className="workspace"><div className="topbar"><span className="pill green">Live</span><span className="pill amber">{planLabel()} · {hoursLeft()}h left</span><button onClick={signOut}>Logout</button></div>{view}</section></div>;
+  const view = active === "finance" ? <Finance rows={finance} reload={loadFinance} /> : active === "ai-agent" ? <Agent rows={finance} /> : active === "dashboard" ? <Dashboard rows={finance} /> : active === "logistics-&-operations" || active === "logistics" ? <LogisticsOperations /> : <Coming title={title(active)} />;
+  return <div className="app-shell"><aside className={collapsed ? "sidebar collapsed" : "sidebar"}><button className="sidebar-brand" onClick={() => setCollapsed(!collapsed)}>{collapsed ? "S" : "SBD Pro"}</button>{nav.map((item) => { const key = item.toLowerCase().replaceAll(" ", "-").replace("&", ""); return <button className={active === key || (item === "Logistics & Operations" && active === "logistics") ? "active" : ""} key={item} onClick={() => setPage(key === "logistics--operations" ? "logistics" : key)}>{collapsed ? item[0] : item}</button>; })}</aside><section className="workspace"><div className="topbar"><span className="pill green">Live</span><span className="pill amber">{planLabel()} · {hoursLeft()}h left</span><button onClick={signOut}>Logout</button></div>{view}</section></div>;
 }
 
 function Dashboard({ rows }) { const s = useMemo(() => summary(rows), [rows]); return <><h1>Dashboard</h1><div className="grid three"><Kpi title="Revenue" value={fmt.format(s.revenue)} tone="green" /><Kpi title="Expenses" value={fmt.format(s.expenses)} tone="red" /><Kpi title="Profit" value={fmt.format(s.profit)} tone="blue" /></div><Transactions rows={rows} /></>; }
@@ -74,6 +76,200 @@ function Transactions({ rows }) { return <div className="panel table-panel"><h2>
 function Kpi({ title, value, tone }) { return <div className={`kpi ${tone}`}><span>{title}</span><strong>{value}</strong><svg viewBox="0 0 120 32"><path d="M2 26 L22 18 L39 22 L58 9 L78 15 L96 6 L118 12" /></svg></div>; }
 function Card({ title, text }) { return <article className="card"><h3>{title}</h3><p>{text}</p></article>; }
 function Section({ title, children }) { return <section className="section"><h2>{title}</h2>{children}</section>; }
+function LogisticsOperations() {
+  const [data, setData] = useState([
+    { date: "2024-05-01", shipments: 120, lanes: 4, utilization: 85, cost: 4500 },
+    { date: "2024-05-02", shipments: 140, lanes: 5, utilization: 88, cost: 4800 },
+    { date: "2024-05-03", shipments: 110, lanes: 4, utilization: 80, cost: 4100 },
+    { date: "2024-05-04", shipments: 160, lanes: 6, utilization: 92, cost: 5200 },
+    { date: "2024-05-05", shipments: 130, lanes: 5, utilization: 86, cost: 4600 }
+  ]);
+  const [datasetName, setDatasetName] = useState("Sample Logistics Data");
+  const [xKey, setXKey] = useState("date");
+  const [yKeys, setYKeys] = useState(["shipments", "cost"]);
+  const [chartType, setChartType] = useState("LineChart");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const processUploadedData = (parsedData, fileName) => {
+    if (!parsedData || parsedData.length === 0) return;
+    const keys = Object.keys(parsedData[0]);
+    if (keys.length === 0) return;
+
+    let nextX = keys[0];
+    let nextY = [];
+
+    for (let k of keys) {
+      const isNum = parsedData.some(d => typeof d[k] === 'number' || !isNaN(Number(d[k])));
+      if (!isNum && nextX === keys[0]) nextX = k;
+      if (isNum && nextY.length < 3) nextY.push(k);
+    }
+
+    setData(parsedData);
+    setDatasetName(fileName.split('.')[0] || "Uploaded Data");
+    setXKey(nextX);
+    setYKeys(nextY.length > 0 ? nextY : [keys[0]]);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const isJSON = file.name.endsWith('.json');
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        if (isJSON) {
+          let parsed = JSON.parse(event.target.result);
+          if (!Array.isArray(parsed)) {
+            if (typeof parsed === 'object') {
+              const arrayVals = Object.values(parsed).find(v => Array.isArray(v));
+              parsed = arrayVals ? arrayVals : [parsed];
+            } else {
+              parsed = [];
+            }
+          }
+          processUploadedData(parsed, file.name);
+        } else {
+          Papa.parse(event.target.result, {
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              processUploadedData(results.data, file.name);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Upload error:", err);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null;
+  };
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery) return data;
+    const lowerQ = searchQuery.toLowerCase();
+    return data.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(lowerQ)));
+  }, [data, searchQuery]);
+
+  const handleExport = () => {
+    if (filteredData.length === 0) return;
+    const csv = Papa.unparse(filteredData);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${datasetName}-export.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const columns = data.length > 0 ? Object.keys(data[0]) : [];
+
+  const stats = useMemo(() => {
+    if (filteredData.length === 0 || yKeys.length === 0) return [];
+    return yKeys.map(key => {
+      const total = filteredData.reduce((sum, row) => sum + (Number(row[key]) || 0), 0);
+      return { key, total, avg: total / filteredData.length };
+    });
+  }, [filteredData, yKeys]);
+
+  const colors = ["#1a56db", "#0d9488", "#92400e", "#166534", "#991b1b"];
+
+  const renderChart = () => {
+    const ChartComponent = chartType === "BarChart" ? BarChart : chartType === "AreaChart" ? AreaChart : LineChart;
+    const DataComponent = chartType === "BarChart" ? Bar : chartType === "AreaChart" ? Area : Line;
+
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <ChartComponent data={filteredData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+          <XAxis dataKey={xKey} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "var(--muted)" }} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "var(--muted)" }} />
+          <RechartsTooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} />
+          <Legend wrapperStyle={{ fontSize: 12, paddingTop: '10px' }} />
+          {yKeys.map((key, i) => (
+            <DataComponent key={key} type="monotone" dataKey={key} fill={colors[i % colors.length]} stroke={colors[i % colors.length]} strokeWidth={2} />
+          ))}
+        </ChartComponent>
+      </ResponsiveContainer>
+    );
+  };
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Logistics & Operations Dashboard</h1>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <label className="button primary" style={{ cursor: 'pointer', padding: '10px 14px', borderRadius: '8px', background: 'var(--blue)', color: '#fff', fontWeight: 700 }}>
+            Upload CSV/JSON
+            <input type="file" accept=".csv,.json" onChange={handleFileUpload} style={{ display: 'none' }} />
+          </label>
+          <button onClick={handleExport} disabled={filteredData.length === 0}>Export CSV</button>
+        </div>
+      </div>
+
+      <div className="grid three" style={{ marginBottom: '20px' }}>
+        {stats.map((s, i) => (
+          <Kpi key={s.key} title={`Avg ${title(s.key)}`} value={Math.round(s.avg).toLocaleString()} tone={i === 0 ? "blue" : i === 1 ? "green" : "amber"} />
+        ))}
+      </div>
+
+      <div className="panel" style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <select value={chartType} onChange={(e) => setChartType(e.target.value)} style={{ width: 'auto' }}>
+            <option value="LineChart">Line Chart</option>
+            <option value="BarChart">Bar Chart</option>
+            <option value="AreaChart">Area Chart</option>
+          </select>
+          <select value={xKey} onChange={(e) => setXKey(e.target.value)} style={{ width: 'auto' }}>
+            {columns.map(c => <option key={c} value={c}>X: {title(c)}</option>)}
+          </select>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '14px', color: 'var(--muted)' }}>Y:</span>
+            {columns.map(c => (
+              <label key={c} style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <input type="checkbox" checked={yKeys.includes(c)} onChange={(e) => {
+                  if (e.target.checked) setYKeys([...yKeys, c]);
+                  else setYKeys(yKeys.filter(k => k !== c));
+                }} style={{ width: 'auto' }} />
+                {title(c)}
+              </label>
+            ))}
+          </div>
+        </div>
+        {renderChart()}
+      </div>
+
+      <div className="panel table-panel">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h2>{datasetName}</h2>
+          <input type="text" placeholder="Search data..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '250px' }} />
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table>
+            <thead>
+              <tr>{columns.map(c => <th key={c}>{title(c)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {filteredData.slice(0, 15).map((row, i) => (
+                <tr key={i}>
+                  {columns.map(c => <td key={c}>{row[c]}</td>)}
+                </tr>
+              ))}
+              {filteredData.length === 0 && <tr><td colSpan={columns.length || 1}>No data matches search.</td></tr>}
+            </tbody>
+          </table>
+          {filteredData.length > 15 && <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '10px', textAlign: 'center' }}>Showing 15 of {filteredData.length} rows</p>}
+        </div>
+      </div>
+    </>
+  );
+}
+
 function Coming({ title }) { return <div className="panel coming"><span className="pill amber">Coming soon</span><h1>{title}</h1><p>This protected SBD module is ready for the next workflow buildout.</p></div>; }
 function Expired({ setPage }) { const { signOut } = useAuth(); return <main className="auth-wrap"><div className="auth-card"><h1>Trial expired</h1><p>Your 24-hour SBD Pro trial has ended.</p><button className="primary" onClick={() => setPage("pricing")}>View pricing</button><button onClick={signOut}>Logout</button></div></main>; }
 function summary(rows) { return rows.reduce((a, r) => { const n = Number(r.amount || 0); r.type === "revenue" ? a.revenue += n : a.expenses += n; a.profit = a.revenue - a.expenses; return a; }, { revenue: 0, expenses: 0, profit: 0 }); }
