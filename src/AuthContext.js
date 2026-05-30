@@ -7,19 +7,25 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => supabase.getSession());
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function loadProfile(activeSession = session) {
     if (!activeSession?.access_token) {
-      setUser(null); setProfile(null); setLoading(false); return null;
+      setUser(null); setProfile(null); setError(null); setLoading(false); return null;
     }
     setLoading(true);
+    setError(null);
     try {
       const authUser = await supabase.getUser();
       setUser(authUser);
       const rows = await supabase.select("profiles", `?id=eq.${authUser.id}&select=*`);
       setProfile(rows?.[0] || null);
       return rows?.[0] || null;
+    } catch (loadError) {
+      setError(loadError);
+      setProfile(null);
+      throw loadError;
     } finally {
       setLoading(false);
     }
@@ -44,26 +50,34 @@ export function AuthProvider({ children }) {
 
   async function signOut() {
     await supabase.signOut();
-    setSession(null); setUser(null); setProfile(null);
+    setSession(null); setUser(null); setProfile(null); setError(null);
+  }
+
+  function isAdminUser(candidateProfile = profile) {
+    return candidateProfile?.is_admin === true;
   }
 
   function hoursLeft() {
+    if (isAdminUser()) return null;
     if (!profile?.trial_ends) return 0;
     return Math.max(0, Math.ceil((new Date(profile.trial_ends).getTime() - Date.now()) / 3600000));
   }
 
   function trialActive() {
     if (!profile) return false;
+    if (isAdminUser()) return true;
     if (profile.plan && profile.plan !== "trial") return true;
     return hoursLeft() > 0;
   }
 
   function planLabel() {
+    if (isAdminUser()) return "Admin";
     if (!profile?.plan) return "Trial";
     return profile.plan === "trial" ? "24-hour trial" : profile.plan;
   }
 
-  const value = useMemo(() => ({ session, user, profile, loading, signUp, signIn, signOut, refreshProfile: loadProfile, trialActive, hoursLeft, planLabel }), [session, user, profile, loading]);
+  const isAdmin = isAdminUser();
+  const value = useMemo(() => ({ session, user, profile, isAdmin, loading, error, signUp, signIn, signOut, refreshProfile: loadProfile, isAdminUser, trialActive, hoursLeft, planLabel }), [session, user, profile, isAdmin, loading, error]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
