@@ -52,18 +52,20 @@ export function AuthProvider({ children }) {
     return Math.max(0, Math.ceil((new Date(profile.trial_ends).getTime() - Date.now()) / 3600000));
   }
 
+  const isAdmin = profile?.role === "admin" || profile?.is_admin === true;
+
   function trialActive() {
     if (!profile) return false;
+    if (isAdmin) return true; // Admins bypass trial expiration
     if (profile.plan && profile.plan !== "trial") return true;
     return hoursLeft() > 0;
   }
 
   function planLabel() {
+    if (isAdmin) return "Admin";
     if (!profile?.plan) return "Trial";
     return profile.plan === "trial" ? "24-hour trial" : profile.plan;
   }
-
-  const isAdmin = profile?.role === "admin" || profile?.is_admin === true;
 
   const value = useMemo(() => ({ session, user, profile, isAdmin, loading, signUp, signIn, signOut, refreshProfile: loadProfile, trialActive, hoursLeft, planLabel }), [session, user, profile, isAdmin, loading]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
