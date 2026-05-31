@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useAuth } from "./AuthContext";
 import { supabase } from "./supabase";
+import { API_BASE_URL } from "./config";
 
 const modules = ["Finance", "Projects", "Logistics", "Inventory", "Customers", "Reports"];
 const nav = ["Dashboard", "Projects", "Finance", "Logistics & Operations", "Inventory", "Customers", "Reports", "AI Agent"];
@@ -49,7 +50,68 @@ function DashboardShell({ active, setPage }) {
   return <div className="app-shell"><aside className={collapsed ? "sidebar collapsed" : "sidebar"}><button className="sidebar-brand" onClick={() => setCollapsed(!collapsed)}>{collapsed ? "S" : "SBD Pro"}</button>{nav.map((item) => { const key = item.toLowerCase().replaceAll(" ", "-").replace("&", ""); return <button className={active === key || (item === "Logistics & Operations" && active === "logistics") ? "active" : ""} key={item} onClick={() => setPage(key === "logistics--operations" ? "logistics" : key)}>{collapsed ? item[0] : item}</button>; })}</aside><section className="workspace"><div className="topbar"><span className="pill green">Live</span><span className="pill amber">{planLabel()} · {hoursLeft()}h left</span><button onClick={signOut}>Logout</button></div>{view}</section></div>;
 }
 
-function Dashboard({ rows }) { const s = useMemo(() => summary(rows), [rows]); return <><h1>Dashboard</h1><div className="grid three"><Kpi title="Revenue" value={fmt.format(s.revenue)} tone="green" /><Kpi title="Expenses" value={fmt.format(s.expenses)} tone="red" /><Kpi title="Profit" value={fmt.format(s.profit)} tone="blue" /></div><Transactions rows={rows} /></>; }
+function Dashboard({ rows }) {
+  const s = useMemo(() => summary(rows), [rows]);
+  return (
+    <>
+      <h1>Dashboard</h1>
+      <div className="grid three">
+        <Kpi title="Revenue" value={fmt.format(s.revenue)} tone="green" />
+        <Kpi title="Expenses" value={fmt.format(s.expenses)} tone="red" />
+        <Kpi title="Profit" value={fmt.format(s.profit)} tone="blue" />
+      </div>
+      <AIInsightsPanel />
+      <Transactions rows={rows} />
+    </>
+  );
+}
+
+function AIInsightsPanel() {
+  const [insights, setInsights] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  async function getInsights(action) {
+    setBusy(true);
+    setInsights(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/ai/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json();
+      setInsights(data.insights);
+    } catch (err) {
+      setInsights(["Error fetching AI insights. Please ensure backend is running."]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="panel" style={{ marginTop: "22px", marginBottom: "22px" }}>
+      <h2>AI Insights</h2>
+      <p>Use our AI assistant to instantly understand your numbers.</p>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
+        {["Analyze My Data", "Explain This Dashboard", "Find Problems", "Suggest KPIs", "Summarize Trends"].map((action) => (
+          <button key={action} disabled={busy} onClick={() => getInsights(action)}>
+            {action}
+          </button>
+        ))}
+      </div>
+      {busy && <p style={{ marginTop: "16px", color: "var(--teal)" }}>Analyzing data...</p>}
+      {insights && (
+        <div style={{ marginTop: "16px", padding: "16px", background: "var(--bg)", borderRadius: "8px" }}>
+          <ul style={{ margin: 0, paddingLeft: "20px" }}>
+            {insights.map((insight, idx) => (
+              <li key={idx} style={{ marginBottom: "8px" }}>{insight}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Finance({ rows, reload }) {
   const { user } = useAuth();

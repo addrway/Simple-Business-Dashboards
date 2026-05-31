@@ -63,7 +63,9 @@ export function AuthProvider({ children }) {
     return profile.plan === "trial" ? "24-hour trial" : profile.plan;
   }
 
-  const value = useMemo(() => ({ session, user, profile, loading, signUp, signIn, signOut, refreshProfile: loadProfile, trialActive, hoursLeft, planLabel }), [session, user, profile, loading]);
+  const isAdmin = profile?.role === "admin" || profile?.is_admin === true;
+
+  const value = useMemo(() => ({ session, user, profile, isAdmin, loading, signUp, signIn, signOut, refreshProfile: loadProfile, trialActive, hoursLeft, planLabel }), [session, user, profile, isAdmin, loading]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
