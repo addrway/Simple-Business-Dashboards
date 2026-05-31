@@ -6,14 +6,21 @@ import { supabase } from "./supabase";
 import { API_BASE_URL } from "./config";
 
 const modules = ["Finance", "Projects", "Logistics", "Inventory", "Customers", "Reports"];
-const nav = ["Dashboard", "Projects", "Finance", "Logistics & Operations", "Inventory", "Customers", "Reports", "AI Agent"];
+const nav = [
+  "Executive Command",
+  "Fleet Operations",
+  "Shipments & Delivery",
+  "Warehouse Operations",
+  "Financial Performance",
+  "AI Analyst"
+];
 const features = ["Manual forms", "AI Auto-Formulate", "Claude AI Agent", "Live KPIs", "Trial countdown", "Supabase auth", "RLS data", "Mobile layouts", "Vercel hosting"];
 const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
 export default function App() {
   const { session, loading, trialActive } = useAuth();
   const [page, setPage] = useState("home");
-  useEffect(() => { if (session && trialActive() && ["login", "signup"].includes(page)) setPage("dashboard"); }, [session, page, trialActive]);
+  useEffect(() => { if (session && trialActive() && ["login", "signup"].includes(page)) setPage("executive-command"); }, [session, page, trialActive]);
   const publicPage = { home: <Home setPage={setPage} />, features: <Features />, pricing: <Pricing setPage={setPage} />, login: <AuthPage mode="login" setPage={setPage} />, signup: <AuthPage mode="signup" setPage={setPage} /> }[page];
   return <><Style />{publicPage && <MarketingNav page={page} setPage={setPage} />}{loading ? <div className="loading">Loading SBD Pro...</div> : publicPage || <ProtectedApp page={page} setPage={setPage} />}</>;
 }
@@ -34,7 +41,7 @@ function AuthPage({ mode, setPage }) {
   const [form, setForm] = useState({ fullName: "", email: "", password: "" });
   const [error, setError] = useState("");
   const signup = mode === "signup";
-  async function submit(e) { e.preventDefault(); setError(""); try { signup ? await signUp(form) : await signIn(form); setPage("dashboard"); } catch (err) { setError(err.message); } }
+  async function submit(e) { e.preventDefault(); setError(""); try { signup ? await signUp(form) : await signIn(form); setPage("executive-command"); } catch (err) { setError(err.message); } }
   return <main className="auth-wrap"><form className="auth-card" onSubmit={submit}><h1>{signup ? "Start SBD Pro" : "Welcome back"}</h1>{signup && <p>24-hour trial, no credit card required. Signup creates your account in Supabase Auth.</p>}{signup && <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />}<input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /><input required minLength="6" type="password" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />{error && <p className="error">{error}</p>}<button className="primary">{signup ? "Create account" : "Login"}</button><button type="button" onClick={() => setPage(signup ? "login" : "signup")}>{signup ? "I already have an account" : "Create a trial account"}</button></form></main>;
 }
 
@@ -46,7 +53,15 @@ function DashboardShell({ active, setPage }) {
   const [finance, setFinance] = useState([]);
   async function loadFinance() { setFinance(await supabase.select("finance", "?select=*&order=date.desc,created_at.desc") || []); }
   useEffect(() => { loadFinance().catch(console.error); }, []);
-  const view = active === "finance" ? <Finance rows={finance} reload={loadFinance} /> : active === "ai-agent" ? <Agent rows={finance} /> : active === "dashboard" ? <Dashboard rows={finance} /> : <Coming title={title(active)} />;
+  const view =
+    active === "executive-command" ? <LogisticsOperations /> : // Reusing the logistics dashboard for the command center for now
+    active === "fleet-operations" ? <Coming title="Fleet Operations" /> :
+    active === "shipments-&-delivery" ? <Coming title="Shipments & Delivery" /> :
+    active === "warehouse-operations" ? <Coming title="Warehouse Operations" /> :
+    active === "financial-performance" ? <Finance rows={finance} reload={loadFinance} /> :
+    active === "ai-analyst" ? <Agent rows={finance} /> :
+    <LogisticsOperations />; // default to Executive Command (LogisticsOperations)
+
   return <div className="app-shell"><aside className={collapsed ? "sidebar collapsed" : "sidebar"}><button className="sidebar-brand" onClick={() => setCollapsed(!collapsed)}>{collapsed ? "S" : "SBD Pro"}</button>{nav.map((item) => { const key = item.toLowerCase().replaceAll(" ", "-"); return <button className={active === key ? "active" : ""} key={item} onClick={() => setPage(key)}>{collapsed ? item[0] : item}</button>; })}</aside><section className="workspace"><div className="topbar"><span className="pill green">Live</span><span className="pill amber">{planLabel()}{isAdmin ? " · unrestricted access" : ` · ${hoursLeft()}h left`}</span><button onClick={signOut}>Logout</button></div>{view}</section></div>;
 }
 
