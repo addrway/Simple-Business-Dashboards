@@ -6,6 +6,7 @@ create table if not exists public.profiles (
   email text,
   plan text not null default 'trial',
   trial_ends timestamptz not null default (now() + interval '24 hours'),
+  is_admin boolean default false,
   created_at timestamptz not null default now()
 );
 
