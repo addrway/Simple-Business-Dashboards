@@ -57,27 +57,27 @@ export function AuthProvider({ children }) {
     return candidateProfile?.is_admin === true;
   }
 
-  function hoursLeft() {
+  function daysLeft() {
     if (isAdminUser()) return null;
     if (!profile?.trial_ends) return 0;
-    return Math.max(0, Math.ceil((new Date(profile.trial_ends).getTime() - Date.now()) / 3600000));
+    return Math.max(0, Math.ceil((new Date(profile.trial_ends).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
   }
 
   function trialActive() {
     if (!profile) return false;
     if (isAdminUser()) return true;
     if (profile.plan && profile.plan !== "trial") return true;
-    return hoursLeft() > 0;
+    return daysLeft() > 0;
   }
 
   function planLabel() {
     if (isAdminUser()) return "Admin";
     if (!profile?.plan) return "Trial";
-    return profile.plan === "trial" ? "24-hour trial" : profile.plan;
+    return profile.plan === "trial" ? "5-day trial" : profile.plan;
   }
 
   const isAdmin = isAdminUser();
-  const value = useMemo(() => ({ session, user, profile, isAdmin, loading, error, signUp, signIn, signOut, refreshProfile: loadProfile, isAdminUser, trialActive, hoursLeft, planLabel }), [session, user, profile, isAdmin, loading, error]);
+  const value = useMemo(() => ({ session, user, profile, isAdmin, loading, error, signUp, signIn, signOut, refreshProfile: loadProfile, isAdminUser, trialActive, daysLeft, planLabel }), [session, user, profile, isAdmin, loading, error]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
