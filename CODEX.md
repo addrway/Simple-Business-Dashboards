@@ -1,62 +1,83 @@
-# CODEX.md
+# Codex Guide for SBD
 
-## SBD Product Vision
+You are working on SBD Pro, the Simple Business Dashboards SaaS app.
 
-SBD — Simple Business Dashboard — is a production SaaS app for everyday business users who need beautiful dashboards without technical complexity.
+Core message:
+"Enter your data. See your business clearly."
 
-The product is built for mom-and-pop shops, small businesses, online sellers, logistics teams, retail operators, and non-technical users who want to enter simple numbers and immediately understand what is happening in their business.
+## Product Direction
 
-SBD must feel clear, calm, premium, and useful. Users should never feel like they need to understand databases, analytics tools, formulas, or dashboard software to get value.
+SBD is a simple SaaS dashboard for small business owners, logistics teams, managers, and consultants. Keep every change practical, clean, and beginner-friendly.
 
-## Tech Stack
+Do not turn SBD into a complex BI platform. Prioritize:
+- Dashboard snapshots
+- Projects and tasks
+- Finance tracking
+- CSV uploads
+- Inventory, customers, reports, invoices, receipts, payroll, contractors, and time tracking scaffolds
+- Admin command center access for admin users only
 
-Build SBD with:
+## Technical Stack
 
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- shadcn/ui-style reusable components
-- Recharts
-- TanStack Table
-- Supabase for authentication and database
-- Vercel-ready deployment configuration
+- React with Create React App
+- Plain JavaScript and JSX only
+- Supabase Auth and Postgres
+- Pure `fetch` Supabase client in `src/supabase.js`
+- Chart.js and `react-chartjs-2`
+- PapaParse for CSV upload
+- Vercel hosting
 
-## Data Rules
+## Design System
 
-- Do not use `localStorage` for business-critical data.
-- Supabase is the source of truth for customer, business, dashboard, metric, and chart data.
-- Use environment variables for service URLs and keys.
-- Do not hardcode secrets, tokens, service keys, or customer-specific credentials.
-- Always protect customer data with appropriate auth checks, ownership checks, and Supabase row-level security assumptions.
+Preserve the existing SBD design:
+- Background: `#f5f4f0`
+- Sidebar: `#0f0f14`
+- Accent blue: `#1a56db`
+- Teal green: `#0d9488`
+- Fonts: Figtree body, Playfair Display headings
+- Clean cards, soft borders, simple KPI cards, readable tables
 
-## UX Rules
+## Security Rules
 
-- UI must be simple enough for non-technical users.
-- Dashboards must look premium, modern, polished, and clean.
-- Prefer clear labels, obvious actions, and friendly workflows over technical language.
-- Keep screens focused. Do not overload users with configuration.
-- Data entry should feel fast and lightweight.
-- Charts should explain business meaning, not just display numbers.
+- Never hardcode service-role keys.
+- Never store passwords in code or docs.
+- Never call AI providers directly from frontend code.
+- Use Supabase RLS and `auth.uid()` ownership rules.
+- Keep admin access gated by `profiles.role = 'admin'` or an equivalent admin profile field already present in the schema.
 
-## Engineering Rules
+## Vercel Deployment
 
-- Build all features in small phases.
-- Keep the codebase Vercel-ready at all times.
-- Always use reusable components for shared UI and dashboard patterns.
-- Prefer simple, maintainable architecture over premature abstraction.
-- Keep business logic, Supabase access, and presentation components organized clearly.
-- Do not introduce payments, Stripe, DigitalOcean, or extra infrastructure until explicitly requested.
+The app is configured for Vercel with `vercel.json`:
 
-## Product Boundaries
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
+  "framework": "create-react-app",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
 
-Phase work should stay focused on the current SBD goal:
+Required Vercel environment variables:
 
-- Auth
-- Business profiles
-- Dashboard type selection
-- Simple metric entry
-- Supabase-backed dashboards
-- Premium chart views
-- Settings and admin basics
+```env
+REACT_APP_SUPABASE_URL=https://cfzlglnnqyetjtbtixlx.supabase.co
+REACT_APP_SUPABASE_KEY=sb_publishable_ihmJz3DWT4_wcGxKNYr9qg_RE-MC0fq
+ANTHROPIC_API_KEY=your-server-side-anthropic-key
+```
 
-Do not expand into billing, marketplace features, complex integrations, or unrelated infrastructure unless requested.
+## Verification
+
+Before finishing a Codex task:
+- Check changed files with `git diff`.
+- Run `node -c api/claude.js` when the API route changes.
+- Run `npm run build` when npm is available.
+- Verify the Vercel URL returns HTTP 200 after deployment.
+- Mention any verification that could not run locally.
+
+## Related AI System Files
+
+- `CLAUDE.md`
+- `.cursor/rules/sbd-engineering-rules.mdc`
+- `prompts/SBD_Codex_Master_Prompt.md`
+- `agents/SBD_Agent_Roles.md`
