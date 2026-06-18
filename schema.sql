@@ -5,7 +5,7 @@ create table if not exists public.profiles (
   full_name text,
   email text,
   plan text not null default 'trial',
-  trial_ends timestamptz not null default (now() + interval '24 hours'),
+  trial_ends timestamptz not null default (now() + interval '5 days'),
   created_at timestamptz not null default now()
 );
 
@@ -112,7 +112,7 @@ set search_path = public
 as $$
 begin
   insert into public.profiles (id, full_name, email, plan, trial_ends)
-  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', ''), new.email, 'trial', now() + interval '24 hours');
+  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', ''), new.email, 'trial', now() + interval '5 days');
   return new;
 end;
 $$;
