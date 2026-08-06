@@ -1,0 +1,72 @@
+{
+  "project": {
+    "name": "Addrway TikTok Generator",
+    "fps": 30,
+    "width": 1080,
+    "height": 1920,
+    "output_file": "output/addrway_tiktok_01.mp4"
+  },
+  "style": {
+    "palette": {
+      "bg_top": "#0B1D39",
+      "bg_bottom": "#00B7FF",
+      "glass": "#FFFFFF",
+      "text_main": "#FFFFFF",
+      "text_accent": "#66E7FF",
+      "success": "#34D399"
+    },
+    "font": "DejaVu-Sans-Bold"
+  },
+  "audio": {
+    "tts_engine": "pyttsx3",
+    "piper_executable": "piper",
+    "piper_model": "models/en_US-lessac-medium.onnx",
+    "background_music": "assets/music/background.mp3",
+    "music_volume": 0.12,
+    "voice_volume": 1.0
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "duration": 4.5,
+      "text": "Your addresses are costing you money.",
+      "voiceover": "Your addresses are costing you money.",
+      "visual": "dashboard"
+    },
+    {
+      "id": 2,
+      "duration": 5.0,
+      "text": "Failed deliveries. Refunds. Angry customers.",
+      "voiceover": "Bad address data leads to failed deliveries, refunds, and frustrated customers.",
+      "visual": "warning"
+    },
+    {
+      "id": 3,
+      "duration": 4.0,
+      "text": "Upload your CSV.",
+      "voiceover": "With Addrway, you can upload your CSV in seconds.",
+      "visual": "upload"
+    },
+    {
+      "id": 4,
+      "duration": 4.5,
+      "text": "Validate addresses instantly.",
+      "voiceover": "Addrway checks, corrects, and validates addresses fast.",
+      "visual": "validate"
+    },
+    {
+      "id": 5,
+      "duration": 4.0,
+      "text": "Clean data. Better deliveries.",
+      "voiceover": "Clean address data means fewer mistakes and smoother operations.",
+      "visual": "results"
+    },
+    {
+      "id": 6,
+      "duration": 4.5,
+      "text": "Addrway. Validate smarter.",
+      "voiceover": "Addrway. Validate smarter. Scale faster.",
+      "visual": "cta"
+    }
+  ]
+}
